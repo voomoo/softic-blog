@@ -1,10 +1,11 @@
 import SofticBlogLayout from "../layout/layout";
 import {useGetCommentsQuery, useGetPostsQuery, useGetUsersQuery} from "../_redux/slices/apiSlice";
-import {Avatar, Button, Card, Col, Row} from "antd";
+import {Avatar, Button, Card, Col, Popconfirm, Row} from "antd";
 import {useEffect, useState} from "react";
 import {mergeData} from "../helpers/mergeData";
 import Link from "next/link";
 import {Post} from "../types";
+import {DeleteOutlined} from "@ant-design/icons";
 
 const {Meta} = Card;
 
@@ -19,7 +20,6 @@ export default function Home() {
     useEffect(() => {
         if (postData.data && commentData.data && userData.data) {
             setMergedData(mergeData(postData.data, commentData.data, userData.data));
-            console.log(mergeData(postData.data, commentData.data, userData.data));
         }
     }, [postData.data, commentData.data, userData.data]);
 
@@ -31,6 +31,12 @@ export default function Home() {
         setInitialLimit(initialLimit + 10);
     }
 
+    const confirm = (index: number) => {
+        const newMergedData = [...mergedData];
+        newMergedData.splice(index, 1);
+        setMergedData(newMergedData);
+    };
+
     return (
         <SofticBlogLayout pageTitle={"Softic-Blog"}>
             <Row gutter={24} style={{margin: "20px auto"}} justify={"center"} align={"middle"}>
@@ -41,7 +47,7 @@ export default function Home() {
                         </Card>
                     </Col>
                 }
-                {limitedData?.map((post: Post) => (
+                {limitedData?.map((post: Post, index: number) => (
                     <Col span={24} key={post?.id} style={{marginTop: "20px"}}>
                         <div style={{display: "flex", justifyContent:"center"}}>
                             <Card
@@ -53,6 +59,14 @@ export default function Home() {
                                     <div key={"comments"}>
                                         <Link href={{pathname: `/post/${post?.id}`, query: {userID: post?.userId?.toString()}}}>Comments: {post?.comment?.length}</Link>
                                     </div>,
+                                    <Popconfirm
+                                        title="Are you sure to delete this task?"
+                                        onConfirm={() => confirm(index)}
+                                        okText="Yes"
+                                        cancelText="No"
+                                    >
+                                        <DeleteOutlined /> Delete
+                                    </Popconfirm>
                                 ]}
                             >
                                 <Meta
